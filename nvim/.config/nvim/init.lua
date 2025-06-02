@@ -67,11 +67,87 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- [[ My Plugins ]]
   {
+    "ThePrimeagen/refactoring.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    lazy = false,
+    opts = {},
+  },
+  {
+    "ThePrimeagen/vim-be-good",
+  },
+  {
+    "supermaven-inc/supermaven-nvim",
+    config = function()
+      require("supermaven-nvim").setup({})
+    end,
+  },
+  {
+    "yetone/avante.nvim",
+    event = "VeryLazy",
+    version = false, -- Never set this value to "*"! Never!
+    opts = {
+      -- add any opts here
+      -- for example
+      provider = "openai",
+      openai = {
+        endpoint = "https://api.openai.com/v1",
+        model = "o4-mini",            -- your desired model (or use gpt-4o, etc.)
+        timeout = 30000,              -- Timeout in milliseconds, increase this for reasoning models
+        temperature = 0,
+        max_completion_tokens = 8192, -- Increase this to include reasoning tokens (for reasoning models)
+        reasoning_effort = "medium",  -- low|medium|high, only used for reasoning models
+      },
+    },
+    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
+    build = "make",
+    -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "stevearc/dressing.nvim",
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
+      --- The below dependencies are optional,
+      "echasnovski/mini.pick",         -- for file_selector provider mini.pick
+      "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
+      "hrsh7th/nvim-cmp",              -- autocompletion for avante commands and mentions
+      "ibhagwan/fzf-lua",              -- for file_selector provider fzf
+      "nvim-tree/nvim-web-devicons",   -- or echasnovski/mini.icons
+      "zbirenbaum/copilot.lua",        -- for providers='copilot'
+      {
+        -- support for image pasting
+        "HakonHarnes/img-clip.nvim",
+        event = "VeryLazy",
+        opts = {
+          -- recommended settings
+          default = {
+            embed_image_as_base64 = false,
+            prompt_for_file_name = false,
+            drag_and_drop = {
+              insert_mode = true,
+            },
+            -- required for Windows users
+            use_absolute_path = true,
+          },
+        },
+      },
+      {
+        -- Make sure to set this up properly if you have lazy=true
+        'MeanderingProgrammer/render-markdown.nvim',
+        opts = {
+          file_types = { "markdown", "Avante" },
+        },
+        ft = { "markdown", "Avante" },
+      },
+    },
+  },
+  {
     'windwp/nvim-autopairs',
     event = "InsertEnter",
     opts = {} -- this is equalent to setup({}) function
   },
-  'github/copilot.vim',
   'nvim-telescope/telescope-file-browser.nvim',
   { "nvim-neotest/nvim-nio" },
   {
@@ -82,7 +158,6 @@ require('lazy').setup({
       transparent_background = true,
     },
   },
-
 
   -- Nvim-Surround (Manipulating Surroundings)
   -- Installed this plugin
@@ -104,6 +179,16 @@ require('lazy').setup({
       "tpope/vim-repeat",
     }
   },
+
+  {
+    "romus204/nvim-float-definition",
+    config = function()
+      require("nvim-float-definition").setup({
+        -- Add your custom configuration here (optional)
+      })
+    end,
+  },
+
 
   -- [[ End of My Plugins ]]
 
@@ -135,21 +220,21 @@ require('lazy').setup({
     },
   },
 
-  {
-    -- Autocompletion
-    'hrsh7th/nvim-cmp',
-    dependencies = {
-      -- Snippet Engine & its associated nvim-cmp source
-      'L3MON4D3/LuaSnip',
-      'saadparwaiz1/cmp_luasnip',
-
-      -- Adds LSP completion capabilities
-      'hrsh7th/cmp-nvim-lsp',
-
-      -- Adds a number of user-friendly snippets
-      'rafamadriz/friendly-snippets',
-    },
-  },
+  -- {
+  --   -- Autocompletion
+  --   'hrsh7th/nvim-cmp',
+  --   dependencies = {
+  --     -- Snippet Engine & its associated nvim-cmp source
+  --     'L3MON4D3/LuaSnip',
+  --     'saadparwaiz1/cmp_luasnip',
+  --
+  --     -- Adds LSP completion capabilities
+  --     'hrsh7th/cmp-nvim-lsp',
+  --
+  --     -- Adds a number of user-friendly snippets
+  --     'rafamadriz/friendly-snippets',
+  --   },
+  -- },
 
   -- Useful plugin to show you pending keybinds.
   { 'folke/which-key.nvim', opts = {} },
@@ -264,10 +349,10 @@ require('lazy').setup({
 
 -- [[ My settings ]]
 
-vim.opt.tabstop = 4
-vim.o.expandtab = true
-vim.o.softtabstop = 4
-vim.o.shiftwidth = 4
+-- vim.opt.tabstop = 4
+-- vim.o.expandtab = true
+-- vim.o.softtabstop = 4
+-- vim.o.shiftwidth = 4
 vim.cmd.colorscheme "catppuccin"
 
 -- [[ End of my settings ]]
@@ -321,6 +406,45 @@ vim.keymap.set('n', 'ä', '}', { silent = false, remap = true })
 vim.keymap.set('n', 'Å', '[', { silent = false, remap = true })
 vim.keymap.set('n', 'Ä', ']', { silent = false, remap = true })
 
+-- Keymap for floating definition plugin
+
+vim.keymap.set("n", "<leader>df", "<cmd>lua require('nvim-float-definition').open_definition_in_float()<CR>", {
+  noremap = true,
+  silent = true,
+})
+
+-- Keymap for refactoring plugin
+vim.keymap.set({ "n", "x" }, "<leader>re", function() return require('refactoring').refactor('Extract Function') end,
+  { expr = true })
+vim.keymap.set({ "n", "x" }, "<leader>rf",
+  function() return require('refactoring').refactor('Extract Function To File') end, { expr = true })
+vim.keymap.set({ "n", "x" }, "<leader>rv", function() return require('refactoring').refactor('Extract Variable') end,
+  { expr = true })
+vim.keymap.set({ "n", "x" }, "<leader>rI", function() return require('refactoring').refactor('Inline Function') end,
+  { expr = true })
+vim.keymap.set({ "n", "x" }, "<leader>ri", function() return require('refactoring').refactor('Inline Variable') end,
+  { expr = true })
+
+vim.keymap.set({ "n", "x" }, "<leader>rbb", function() return require('refactoring').refactor('Extract Block') end,
+  { expr = true })
+vim.keymap.set({ "n", "x" }, "<leader>rbf",
+  function() return require('refactoring').refactor('Extract Block To File') end, { expr = true })
+-- You can also use below = true here to to change the position of the printf
+-- statement (or set two remaps for either one). This remap must be made in normal mode.
+vim.keymap.set(
+  "n",
+  "<leader>rp",
+  function() require('refactoring').debug.printf({ below = false }) end
+)
+
+-- Print var
+
+vim.keymap.set({ "x", "n" }, "<leader>rv", function() require('refactoring').debug.print_var() end)
+-- Supports both visual and normal mode
+
+vim.keymap.set("n", "<leader>rc", function() require('refactoring').debug.cleanup({}) end)
+-- Supports only normal mode
+
 -- [[ End of My Keymaps ]]
 
 -- Keymaps for better default experience
@@ -342,15 +466,28 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   pattern = '*',
 })
 
+-- [[ My Autocommands ]]
+
+vim.api.nvim_create_autocmd('BufWritePost', {
+  pattern = '*.py',
+  callback = function()
+    -- Only run autopep8 when editing Python files
+    if vim.bo.filetype ~= 'python' then
+      return
+    end
+    local file = vim.fn.expand('%:p')
+    vim.fn.system({ 'autopep8', '--in-place', file })
+    vim.cmd('edit!')
+  end,
+})
+
+-- [[ End of My Autocommands ]]
+
 -- [[ My Configurations ]]
 
-local function SuggestOneWord()
-  local suggestion = vim.fn['copilot#Accept']("")
-  local bar = vim.fn['copilot#TextQueuedForInsertion']()
-  return vim.fn.split(bar, [[[ .]\zs]])[1]
-end
+require('refactoring').setup({})
 
-vim.keymap.set('i', '<C-l>', SuggestOneWord, { expr = true, remap = false })
+vim.wo.relativenumber = true
 
 -- [[ End of My Configurations ]]
 
@@ -548,8 +685,8 @@ local servers = {
 require('neodev').setup()
 
 -- nvim-cmp supports additional completion capabilities, so broadcast that to servers
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
+-- local capabilities = vim.lsp.protocol.make_client_capabilities()
+-- capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
 -- Ensure the servers above are installed
 local mason_lspconfig = require 'mason-lspconfig'
@@ -571,51 +708,52 @@ mason_lspconfig.setup_handlers {
 
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
-local cmp = require 'cmp'
-local luasnip = require 'luasnip'
-require('luasnip.loaders.from_vscode').lazy_load()
-luasnip.config.setup {}
-
-cmp.setup {
-  snippet = {
-    expand = function(args)
-      luasnip.lsp_expand(args.body)
-    end,
-  },
-  mapping = cmp.mapping.preset.insert {
-    ['<C-n>'] = cmp.mapping.select_next_item(),
-    ['<C-p>'] = cmp.mapping.select_prev_item(),
-    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-f>'] = cmp.mapping.scroll_docs(4),
-    ['<C-Space>'] = cmp.mapping.complete {},
-    ['<CR>'] = cmp.mapping.confirm {
-      behavior = cmp.ConfirmBehavior.Replace,
-      select = true,
-    },
-    --   ['<Tab>'] = cmp.mapping(function(fallback)
-    --     if cmp.visible() then
-    --       cmp.select_next_item()
-    --     elseif luasnip.expand_or_locally_jumpable() then
-    --       luasnip.expand_or_jump()
-    --     else
-    --       fallback()
-    --     end
-    --   end, { 'i', 's' }),
-    --   ['<S-Tab>'] = cmp.mapping(function(fallback)
-    --     if cmp.visible() then
-    --       cmp.select_prev_item()
-    --     elseif luasnip.locally_jumpable(-1) then
-    --       luasnip.jump(-1)
-    --     else
-    --       fallback()
-    --     end
-    --   end, { 'i', 's' }),
-  },
-  sources = {
-    { name = 'nvim_lsp' },
-    { name = 'luasnip' },
-  },
-}
+-- local cmp = require 'cmp'
+-- local luasnip = require 'luasnip'
+-- require('luasnip.loaders.from_vscode').lazy_load()
+-- luasnip.config.setup {}
+--
+-- cmp.setup {
+--   snippet = {
+--     expand = function(args)
+--       luasnip.lsp_expand(args.body)
+--     end,
+--   },
+--   mapping = cmp.mapping.preset.insert {
+--     ['<C-n>'] = cmp.mapping.select_next_item(),
+--     ['<C-p>'] = cmp.mapping.select_prev_item(),
+--     ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+--     ['<C-f>'] = cmp.mapping.scroll_docs(4),
+--     ['<C-Space>'] = cmp.mapping.complete {},
+--     ['<CR>'] = cmp.mapping.confirm {
+--       behavior = cmp.ConfirmBehavior.Replace,
+--       select = true,
+--     },
+--     ['<Tab>'] = cmp.mapping(function(fallback)
+--       if cmp.visible() then
+--         cmp.select_next_item()
+--       elseif luasnip.expand_or_locally_jumpable() then
+--         luasnip.expand_or_jump()
+--       else
+--         fallback()
+--       end
+--     end, { 'i', 's' }),
+--     ['<S-Tab>'] = cmp.mapping(function(fallback)
+--       if cmp.visible() then
+--         cmp.select_prev_item()
+--       elseif luasnip.locally_jumpable(-1) then
+--         luasnip.jump(-1)
+--       else
+--         fallback()
+--       end
+--     end, { 'i', 's' }),
+--   },
+--   sources = {
+--     --    { name = 'nvim_lsp' },
+--     -- { name = 'luasnip' },
+--     -- { name = 'supermaven' }
+--   },
+-- }
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
