@@ -67,6 +67,14 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- [[ My Plugins ]]
   {
+    "folke/zen-mode.nvim",
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    }
+  },
+  {
     "ThePrimeagen/refactoring.nvim",
     dependencies = {
       "nvim-lua/plenary.nvim",
@@ -98,7 +106,7 @@ require('lazy').setup({
         timeout = 30000,              -- Timeout in milliseconds, increase this for reasoning models
         temperature = 0,
         max_completion_tokens = 8192, -- Increase this to include reasoning tokens (for reasoning models)
-        reasoning_effort = "medium",  -- low|medium|high, only used for reasoning models
+        reasoning_effort = "low",     -- low|medium|high, only used for reasoning models
       },
     },
     -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
@@ -142,11 +150,6 @@ require('lazy').setup({
         ft = { "markdown", "Avante" },
       },
     },
-  },
-  {
-    'windwp/nvim-autopairs',
-    event = "InsertEnter",
-    opts = {} -- this is equalent to setup({}) function
   },
   'nvim-telescope/telescope-file-browser.nvim',
   { "nvim-neotest/nvim-nio" },
@@ -349,11 +352,15 @@ require('lazy').setup({
 
 -- [[ My settings ]]
 
--- vim.opt.tabstop = 4
--- vim.o.expandtab = true
--- vim.o.softtabstop = 4
--- vim.o.shiftwidth = 4
+vim.opt.tabstop = 4
+vim.o.expandtab = true
+vim.o.softtabstop = 4
+vim.o.shiftwidth = 4
 vim.cmd.colorscheme "catppuccin"
+vim.o.timeout = true   -- keep for normal-mode mappings
+vim.o.timeoutlen = 300 -- lower from default 1000ms
+vim.o.ttimeout = true
+vim.o.ttimeoutlen = 10 -- terminal keycode timeout (ESC-related)
 
 -- [[ End of my settings ]]
 
@@ -405,6 +412,7 @@ vim.keymap.set('n', 'å', '{', { silent = false, remap = true })
 vim.keymap.set('n', 'ä', '}', { silent = false, remap = true })
 vim.keymap.set('n', 'Å', '[', { silent = false, remap = true })
 vim.keymap.set('n', 'Ä', ']', { silent = false, remap = true })
+vim.keymap.set('n', '-', ':Ex<CR>', { silent = true })
 
 -- Keymap for floating definition plugin
 
@@ -488,6 +496,8 @@ vim.api.nvim_create_autocmd('BufWritePost', {
 require('refactoring').setup({})
 
 vim.wo.relativenumber = true
+
+vim.g.netrw_bufsettings = 'noma nomod nu rnu nobl nowrap ro'
 
 -- [[ End of My Configurations ]]
 
@@ -633,7 +643,9 @@ local on_attach = function(_, bufnr)
   nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
 
   nmap('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
-  nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+  nmap('gr', function()
+    require('telescope.builtin').lsp_references({ fname_width = 40 })
+  end, '[G]oto [R]eferences')
   nmap('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
   nmap('<leader>D', vim.lsp.buf.type_definition, 'Type [D]efinition')
   nmap('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
@@ -749,8 +761,8 @@ mason_lspconfig.setup_handlers {
 --     end, { 'i', 's' }),
 --   },
 --   sources = {
---     --    { name = 'nvim_lsp' },
---     -- { name = 'luasnip' },
+--     { name = 'nvim_lsp' },
+--     { name = 'luasnip' },
 --     -- { name = 'supermaven' }
 --   },
 -- }
