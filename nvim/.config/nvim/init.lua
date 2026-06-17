@@ -84,70 +84,6 @@ require('lazy').setup({
       require("supermaven-nvim").setup({})
     end,
   },
-  {
-    "yetone/avante.nvim",
-    event = "VeryLazy",
-    version = false, -- Never set this value to "*"! Never!
-    opts = {
-      -- add any opts here
-      -- for example
-      provider = "openai",
-      openai = {
-        endpoint = "https://api.openai.com/v1",
-        model = "o4-mini",            -- your desired model (or use gpt-4o, etc.)
-        timeout = 30000,              -- Timeout in milliseconds, increase this for reasoning models
-        temperature = 0,
-        max_completion_tokens = 8192, -- Increase this to include reasoning tokens (for reasoning models)
-        reasoning_effort = "medium",  -- low|medium|high, only used for reasoning models
-      },
-    },
-    -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
-    build = "make",
-    -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-      "stevearc/dressing.nvim",
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      --- The below dependencies are optional,
-      "echasnovski/mini.pick",         -- for file_selector provider mini.pick
-      "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
-      "hrsh7th/nvim-cmp",              -- autocompletion for avante commands and mentions
-      "ibhagwan/fzf-lua",              -- for file_selector provider fzf
-      "nvim-tree/nvim-web-devicons",   -- or echasnovski/mini.icons
-      "zbirenbaum/copilot.lua",        -- for providers='copilot'
-      {
-        -- support for image pasting
-        "HakonHarnes/img-clip.nvim",
-        event = "VeryLazy",
-        opts = {
-          -- recommended settings
-          default = {
-            embed_image_as_base64 = false,
-            prompt_for_file_name = false,
-            drag_and_drop = {
-              insert_mode = true,
-            },
-            -- required for Windows users
-            use_absolute_path = true,
-          },
-        },
-      },
-      {
-        -- Make sure to set this up properly if you have lazy=true
-        'MeanderingProgrammer/render-markdown.nvim',
-        opts = {
-          file_types = { "markdown", "Avante" },
-        },
-        ft = { "markdown", "Avante" },
-      },
-    },
-  },
-  {
-    'windwp/nvim-autopairs',
-    event = "InsertEnter",
-    opts = {} -- this is equalent to setup({}) function
-  },
   'nvim-telescope/telescope-file-browser.nvim',
   { "nvim-neotest/nvim-nio" },
   {
@@ -168,16 +104,6 @@ require('lazy').setup({
         -- Configuration here, or leave empty to use defaults
       })
     end
-  },
-
-  {
-    "ggandor/leap.nvim",
-    config = function()
-      require("leap").add_default_mappings()
-    end,
-    dependencies = {
-      "tpope/vim-repeat",
-    }
   },
 
   {
@@ -213,7 +139,7 @@ require('lazy').setup({
 
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim',       tag = 'legacy', opts = {} },
+      -- { 'j-hui/fidget.nvim',       tag = 'legacy', opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
@@ -301,7 +227,6 @@ require('lazy').setup({
   -- Fuzzy Finder (files, lsp, etc)
   {
     'nvim-telescope/telescope.nvim',
-    branch = '0.1.x',
     dependencies = {
       'nvim-lua/plenary.nvim',
       -- Fuzzy Finder Algorithm which requires local dependencies to be built.
@@ -320,12 +245,31 @@ require('lazy').setup({
   },
 
   {
-    -- Highlight, edit, and navigate code
-    'nvim-treesitter/nvim-treesitter',
+    "nvim-treesitter/nvim-treesitter",
+    branch = "main",
+    build = ":TSUpdate",
     dependencies = {
-      'nvim-treesitter/nvim-treesitter-textobjects',
+      { "nvim-treesitter/nvim-treesitter-textobjects", branch = "main" },
     },
-    build = ':TSUpdate',
+    config = function()
+      local ts = require("nvim-treesitter")
+
+      -- Install a baseline set (no-op if already installed)
+      ts.install({
+        "c",
+        "cpp",
+        "go",
+        "lua",
+        "python",
+        "rust",
+        "tsx",
+        "javascript",
+        "typescript",
+        "vim",
+        "vimdoc",
+        "query",
+      }, { summary = false }):wait(30000)
+    end,
   },
 
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
@@ -405,6 +349,8 @@ vim.keymap.set('n', 'å', '{', { silent = false, remap = true })
 vim.keymap.set('n', 'ä', '}', { silent = false, remap = true })
 vim.keymap.set('n', 'Å', '[', { silent = false, remap = true })
 vim.keymap.set('n', 'Ä', ']', { silent = false, remap = true })
+vim.keymap.set('n', '-', ':Ex<CR>', { silent = false, remap = true })
+vim.keymap.set('n', '<leader>w', ":let @+ = fnamemodify(expand('%:p'), ':.' )<CR>", { silent = false, remap = true })
 
 -- Keymap for floating definition plugin
 
@@ -542,69 +488,69 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
-require('nvim-treesitter.configs').setup {
-  -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim' },
-
-  -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
-  auto_install = false,
-
-  highlight = { enable = true },
-  indent = { enable = true },
-  incremental_selection = {
-    enable = true,
-    keymaps = {
-      init_selection = '<c-space>',
-      node_incremental = '<c-space>',
-      scope_incremental = '<c-s>',
-      node_decremental = '<M-space>',
-    },
-  },
-  textobjects = {
-    select = {
-      enable = true,
-      lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
-      keymaps = {
-        -- You can use the capture groups defined in textobjects.scm
-        ['aa'] = '@parameter.outer',
-        ['ia'] = '@parameter.inner',
-        ['af'] = '@function.outer',
-        ['if'] = '@function.inner',
-        ['ac'] = '@class.outer',
-        ['ic'] = '@class.inner',
-      },
-    },
-    move = {
-      enable = true,
-      set_jumps = true, -- whether to set jumps in the jumplist
-      goto_next_start = {
-        [']m'] = '@function.outer',
-        [']]'] = '@class.outer',
-      },
-      goto_next_end = {
-        [']M'] = '@function.outer',
-        [']['] = '@class.outer',
-      },
-      goto_previous_start = {
-        ['[m'] = '@function.outer',
-        ['[['] = '@class.outer',
-      },
-      goto_previous_end = {
-        ['[M'] = '@function.outer',
-        ['[]'] = '@class.outer',
-      },
-    },
-    swap = {
-      enable = true,
-      swap_next = {
-        ['<leader>a'] = '@parameter.inner',
-      },
-      swap_previous = {
-        ['<leader>A'] = '@parameter.inner',
-      },
-    },
-  },
-}
+-- require('nvim-treesitter.configs').setup {
+--   -- Add languages to be installed here that you want installed for treesitter
+--   ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim' },
+--
+--   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
+--   auto_install = true,
+--
+--   highlight = { enable = true },
+--   indent = { enable = true },
+--   incremental_selection = {
+--     enable = true,
+--     keymaps = {
+--       init_selection = '<c-space>',
+--       node_incremental = '<c-space>',
+--       scope_incremental = '<c-s>',
+--       node_decremental = '<M-space>',
+--     },
+--   },
+--   textobjects = {
+--     select = {
+--       enable = true,
+--       lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+--       keymaps = {
+--         -- You can use the capture groups defined in textobjects.scm
+--         ['aa'] = '@parameter.outer',
+--         ['ia'] = '@parameter.inner',
+--         ['af'] = '@function.outer',
+--         ['if'] = '@function.inner',
+--         ['ac'] = '@class.outer',
+--         ['ic'] = '@class.inner',
+--       },
+--     },
+--     move = {
+--       enable = true,
+--       set_jumps = true, -- whether to set jumps in the jumplist
+--       goto_next_start = {
+--         [']m'] = '@function.outer',
+--         [']]'] = '@class.outer',
+--       },
+--       goto_next_end = {
+--         [']M'] = '@function.outer',
+--         [']['] = '@class.outer',
+--       },
+--       goto_previous_start = {
+--         ['[m'] = '@function.outer',
+--         ['[['] = '@class.outer',
+--       },
+--       goto_previous_end = {
+--         ['[M'] = '@function.outer',
+--         ['[]'] = '@class.outer',
+--       },
+--     },
+--     swap = {
+--       enable = true,
+--       swap_next = {
+--         ['<leader>a'] = '@parameter.inner',
+--       },
+--       swap_previous = {
+--         ['<leader>A'] = '@parameter.inner',
+--       },
+--     },
+--   },
+-- }
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
@@ -666,10 +612,10 @@ end
 --  If you want to override the default filetypes that your language server will attach to you can
 --  define the property 'filetypes' to the map in question.
 local servers = {
-  clangd = {},
+  -- clangd = {},
   -- gopls = {},
   -- pyright = {},
-  rust_analyzer = {},
+  -- rust_analyzer = {},
   -- tsserver = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
 
@@ -693,17 +639,6 @@ local mason_lspconfig = require 'mason-lspconfig'
 
 mason_lspconfig.setup {
   ensure_installed = vim.tbl_keys(servers),
-}
-
-mason_lspconfig.setup_handlers {
-  function(server_name)
-    require('lspconfig')[server_name].setup {
-      capabilities = capabilities,
-      on_attach = on_attach,
-      settings = servers[server_name],
-      filetypes = (servers[server_name] or {}).filetypes,
-    }
-  end
 }
 
 -- [[ Configure nvim-cmp ]]
