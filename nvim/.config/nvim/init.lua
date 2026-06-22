@@ -69,7 +69,7 @@ require('lazy').setup({
   {
     "ThePrimeagen/refactoring.nvim",
     dependencies = {
-      "ThePrimeagen/async.nvim",
+      "lewis6991/async.nvim",
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
     },
