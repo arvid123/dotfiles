@@ -1,0 +1,19 @@
+nvim/.config/nvim/init.lua
+  s_fa6305e0fb287c::t_fc6637b10da81e 72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "cbf6793fb2f3aa81a4ce1fa49789fef5c65f3dc6",
+  "prompts": {},
+  "sessions": {
+    "s_fa6305e0fb287c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ed438-f484-76f1-b5e5-1a216f7dd02a",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Arvid Lagerqvist <arvid.lagerqvist@live.se>"
+    }
+  }
+}
