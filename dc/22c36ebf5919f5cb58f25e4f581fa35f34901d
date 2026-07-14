@@ -1,0 +1,21 @@
+bin/.local/bin/hypr-external-only
+  s_ac4024443f884e::t_52643c07dfd249 1-68
+hyprland/.config/hypr/hyprland.conf
+  s_ac4024443f884e::t_dd93ebce6b3ab8 61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.13",
+  "base_commit_sha": "dc22c36ebf5919f5cb58f25e4f581fa35f34901d",
+  "prompts": {},
+  "sessions": {
+    "s_ac4024443f884e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5f7f-f9a2-7db0-96de-95dacb99a51f",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Arvid Lagerqvist <arvid.lagerqvist@live.se>"
+    }
+  }
+}
