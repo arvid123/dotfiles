@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+
+import json
+import os
+import socket
+import subprocess
+import time
+
+INTERNAL_MONITOR = "eDP-1"
+
+
+def hyprctl(*args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["hyprctl", *args],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+
+
+def update_outputs() -> None:
+    result = hyprctl("-j", "monitors", "all")
+    if result.returncode != 0:
+        return
+
+    monitors = json.loads(result.stdout)
+    external = next(
+        (
+            monitor
+            for monitor in monitors
+            if monitor["name"] != INTERNAL_MONITOR and not monitor["disabled"]
+        ),
+        None,
+    )
+
+    if external:
+        hyprctl("keyword", "monitor", f"{INTERNAL_MONITOR},disable")
+        hyprctl("dispatch", "focusmonitor", external["name"])
+    else:
+        hyprctl("keyword", "monitor", f"{INTERNAL_MONITOR},preferred,0x0,1.5")
+        hyprctl("dispatch", "focusmonitor", INTERNAL_MONITOR)
+
+
+def event_socket_path() -> str:
+    runtime_dir = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
+    signature = os.environ["HYPRLAND_INSTANCE_SIGNATURE"]
+    return f"{runtime_dir}/hypr/{signature}/.socket2.sock"
+
+
+def main() -> None:
+    update_outputs()
+
+    while True:
+        try:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+                connection.connect(event_socket_path())
+                stream = connection.makefile()
+                for event in stream:
+                    if event.startswith(("monitoradded", "monitorremoved")):
+                        time.sleep(0.2)
+                        update_outputs()
+        except (ConnectionError, FileNotFoundError):
+            time.sleep(1)
+
+
+if __name__ == "__main__":
+    main()
